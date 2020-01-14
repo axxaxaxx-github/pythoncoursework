@@ -1,69 +1,79 @@
-import platform
-import os
+import platform, os, subprocess, time
 from customModules import *
-import subprocess
 
-files = []
-directories = []
-directoriesList = []
-discoveredFiles = []
-filesToCheck = []
-exsistingXml = []
-filesToCheckNoExt = []
-count = 0
+'''
+Todo:
+Add timestamp to log file
+
+'''
+
+'''
+Variables:
+
+f -> log file
+path -> path to evtx files
+directories -> list of directories found within specified path
+listOfFiles -> list of files with the directory the files have been found in
+'''
+
+#Create and open log file
+f = open("converstion_log.txt", "w+")
 
 #Calls getOS module from customModules script to determine the path to be used.
-path = getOS()
+path = getOS(f)
 
-#Get a list of the files in the specified directory. Print statement included to make sure it is working for debugging purposes. Will removed when finished and functional.
+#Get list of directories and create directories list
 directories = os.listdir(path)
 
+
+#Remove any directories with .txt in the name to remove any files from the list of directories
 for i in directories:
-    files.append(os.listdir(path + "/" + i))
+    if ".txt" in i:
+        directories.remove(i)    
 
-#Print list of files with their directories. Creates a list of files without their extension
-for i in range(len(directories)):
-    #print(directories[i])
-    for j in range(len(files[i])):
-        #print(files[i][j])
-        filesToCheck.append(directories[i] + "/" + files[i][j][:-5])
-        filesToCheckNoExt.append(files[i][j][:-5])
-'''
-for i in filesToCheck:
-    print(i)
-'''
+#Output list of directories to the log file
+for i in directories:
+    f.write("Directory found: {0} \n".format(i))        
 
-#WORKS - Need to change to add this information to the log
-'''
-for i in filesToCheck:
-    if i not in discoveredFiles:
-        print("New file found: {0}".format(i))
-    else:
-        print("File already found {0}".format(i))
-'''
-#Check for files with .xml extension. If it exsists, add it to the list of detected XMl files
-for root, dirs, files in os.walk(path):
-    for file in files:
-        if (file.endswith(".xml")):
-            #print(os.path.join(root,file))
-            exsistingXml.append(file)
-        else:
-            continue
-            #print("No xml found")
+#print(os.listdir(path + str(directories[0])))
 
-#Print if an XML Files exsists
-#print("XML Found: {0}".format(exsistingXml))
+# Get the list of all files in directory tree at given path
+listOfFiles = list()
+for (dirpath, dirnames, filenames) in os.walk(path):
+    listOfFiles += [os.path.join(dirpath, file) for file in filenames]
 
-for i in filesToCheckNoExt:
-    print(i)
+#Remove any files without the .evtx extension from the listOfFiles
+for i in listOfFiles:
+    if ".evtx" not in i:
+        listOfFiles.remove(i)
 
-for i in exsistingXml:
-    print(i)
+#Remove path from lit of files to only leave directory and file name
+for i in listOfFiles:
+    listOfFiles.remove(i)
+    i = i.replace(path, '')
+    listOfFiles.append(i)
 
-for i in filesToCheckNoExt:
-    if (str(i) + ".xml") in exsistingXml:
-        print("File Exists: {0}".format(i))
-    else:
-        print("No File Exists")
+#Write list of files to log file
+for i in listOfFiles:
+    f.write("File Found: {0} \n".format(i))
 
-subprocess.run(["python3", "evtx_dump.py" "privexchange_dirkjan.evtx > test1.xml"])
+numberOfFilesCoverted = 0
+numberOfFilesCovertedErrors = 0
+#Use subprocesses module to call the evtx_dump.py file from terminal
+for i in listOfFiles:
+    if ".evtx" in i:
+            try:
+                os.system("\n python3 evtx_dump.py {0} > {1}.xml \n > output.txt".format(i, i[:-5]))
+                print("Yes {}".format(i))
+                numberOfFilesCoverted += 1
+            except:
+                print("No: {}".format(i))
+                numberOfFilesCovertedErrors += 1
+
+f.write("Total number of files: {}".format(len(listOfFiles)))
+f.write("Number of files converted sucsessfully: {} \n".format(numberOfFilesCoverted))
+f.write("Number of Errors: {} \n".format(numberOfFilesCovertedErrors))
+
+
+f.close()
+

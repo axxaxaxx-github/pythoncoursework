@@ -4,7 +4,7 @@ def getOS(f):
     operatingSystem = (platform.system())
     if operatingSystem == "Linux":
         f.write("The OS is {0}".format(operatingSystem) + "\n")
-        path = '/home/user/CI5235_Matthew_K1818940/pythoncoursework/evtx_logs/'
+        path = '/home/user/CI5235_Matthew_K1818940/pythoncoursework/evt_logs/'
         f.write('Path set to {0}'.format(path) + "\n")
         return path
     else:

@@ -1,5 +1,6 @@
 import platform, os, subprocess, time
 from customModules import *
+from convert_files import *
 
 '''
 Todo:
@@ -58,22 +59,28 @@ for i in listOfFiles:
     f.write("File Found: {0} \n".format(i))
 
 numberOfFilesCoverted = 0
-numberOfFilesCovertedErrors = 0
+numberOfFilesCovertedError = 0
+
+
+convert_files(path, listOfFiles, numberOfFilesCoverted, numberOfFilesCovertedError)
+
+'''
 #Use subprocesses module to call the evtx_dump.py file from terminal
 for i in listOfFiles:
-    if ".evtx" in i:
-            try:
-                os.system("\n python3 evtx_dump.py {0} > {1}.xml \n > output.txt".format(i, i[:-5]))
-                print("Yes {}".format(i))
-                numberOfFilesCoverted += 1
-            except:
-                print("No: {}".format(i))
-                numberOfFilesCovertedErrors += 1
+    print(i)
+    try:
+        f.write("Converting: {0} to: {1}\n".format(path + i,path + i[:-5]))
+        os.system("python3 /home/user/CI5235_Matthew_K1818940/evtx_dump.py '/{0}' > '/{1}'.xml > output.txt".format(str(i), (str(i[:-5]))))
+        f.write("Yes {} \n".format(i))
+        numberOfFilesCoverted += 1
+    except:
+        print("ERROR: {0}".format(i))
 
-f.write("Total number of files: {}".format(len(listOfFiles)))
+'''
+
+f.write("Total number of files: {} \n".format(len(listOfFiles)))
 f.write("Number of files converted sucsessfully: {} \n".format(numberOfFilesCoverted))
-f.write("Number of Errors: {} \n".format(numberOfFilesCovertedErrors))
+f.write("Number of Errors: {} \n".format(numberOfFilesCovertedError))
 
 
 f.close()
-
